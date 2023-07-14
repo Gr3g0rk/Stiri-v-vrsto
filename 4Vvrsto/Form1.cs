@@ -400,6 +400,7 @@ namespace _4Vvrsto
             }
 
             return true;
+            // Zelo rad prograiram :)
         }
 
     }
