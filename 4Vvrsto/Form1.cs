@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace _4Vvrsto
@@ -21,6 +22,7 @@ namespace _4Vvrsto
         int stZmagRumeni = 0;
         bool igraZaceta = false;
         bool gbLahki_pritisnjen = false;
+        bool gbTezki_pritisnjen = false;
         private int col;
         private int row;
         public Form1()
@@ -90,8 +92,6 @@ namespace _4Vvrsto
             napisTezavnost.Visible = true;
 
 
-
-
         }
 
 
@@ -158,7 +158,7 @@ namespace _4Vvrsto
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void gameBoardPanel_MouseClick(object sender, MouseEventArgs e)
+        private async void gameBoardPanel_MouseClick(object sender, MouseEventArgs e)
         {
             int stVrstic = plosca.GetLength(1);
             int stStolpcev = plosca.GetLength(0);
@@ -192,8 +192,11 @@ namespace _4Vvrsto
                             gbReset.Visible = true;
                             stZmagRumeni += 1;
                             zmageRumeni.Text = $"{stZmagRumeni}";
-                            return;
+                            return; 
                         }
+
+                        // rdeci je na vrsti
+                        //await Task.Delay(750);
                         GenerateRandomMove();
 
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
@@ -214,6 +217,39 @@ namespace _4Vvrsto
                             konecIgre = true;
                         }
                     }
+
+                    // clovek in pametnejsi robot
+                    else if (gbTezki_pritisnjen)
+                    {
+                        if (naVrstiRumeni) // rumen je na vrsti
+                        {
+                            plosca[col, row] = 1;
+                        }
+                        gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
+
+                        if (PreveriZmago(col, row))
+                        {
+                            MessageBox.Show("Rumeni je zmagal!");
+                            konecIgre = true;
+                            gbReset.Visible = true;
+                            stZmagRumeni += 1;
+                            zmageRumeni.Text = $"{stZmagRumeni}";
+                            return;
+                        }
+
+                        // Check if there are three red coins in a row
+                        if (CountRedCoinsInRow(col, row) >= 3)
+                        {
+                            UpdateRedCoinsSequence(); // Generate a smart move
+                        }
+                        else
+                        {
+                            GenerateRandomMove(); // Generate a random move
+                        }
+
+                        gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
+                    }
+
 
                     else // igra med dvema clovekoma
                     {
@@ -268,6 +304,25 @@ namespace _4Vvrsto
             gameBoardPanel.Invalidate();
 
         }
+
+        private void gbTezka_MouseClick(object sender, MouseEventArgs e)
+        {
+            gbLahki_pritisnjen = true;
+            gbZacni.Visible = false;
+            gbLahki.Visible = false;
+            gbTezka.Visible = false;
+            napisTezavnost.Visible = false;
+            napisSVV.Visible = false;
+            napisZmage.Visible = true;
+            naVrstiRumeni = true;
+            zmageRdec.Visible = true;
+            zmageRumeni.Visible = true;
+            gbRobot.Visible = false;
+            igraZaceta = true;
+            gameBoardPanel.Invalidate();
+
+        }
+
 
         private void GenerateRandomMove()
         {
@@ -400,9 +455,122 @@ namespace _4Vvrsto
             }
 
             return true;
-            // Zelo rad prograiram :)
+
+        }
+        private int CountRedCoinsInRow(int col, int row)
+        {
+            int stStolpcev = plosca.GetLength(0);
+            int igralec = 2; // Red player
+
+            // Count horizontally to the left
+            int count = 1;
+            for (int c = col - 1; c >= 0 && plosca[c, row] == igralec; c--)
+            {
+                count++;
+            }
+
+            // Count horizontally to the right
+            for (int c = col + 1; c < stStolpcev && plosca[c, row] == igralec; c++)
+            {
+                count++;
+            }
+
+            return count;
         }
 
+        private void UpdateRedCoinsSequence()
+        {
+            int stVrstic = plosca.GetLength(1);
+            int stStolpcev = plosca.GetLength(0);
+
+            // Check horizontally
+            for (int row = 0; row < stVrstic; row++)
+            {
+                for (int col = 0; col < stStolpcev - 3; col++)
+                {
+                    if (plosca[col, row] == 2 && plosca[col + 1, row] == 2 && plosca[col + 2, row] == 2 && plosca[col + 3, row] == 0)
+                    {
+                        plosca[col + 3, row] = 2;
+                        gameBoardPanel.Invalidate(); // Update the game board with the new move
+                        if (PreveriZmago(col + 3, row)) // Check if this move wins the game
+                        {
+                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            konecIgre = true;
+                            gbReset.Visible = true;
+                            stZmagRdeci += 1;
+                            zmageRdec.Text = $"{stZmagRdeci}";
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Check vertically
+            for (int col = 0; col < stStolpcev; col++)
+            {
+                for (int row = 0; row < stVrstic - 3; row++)
+                {
+                    if (plosca[col, row] == 2 && plosca[col, row + 1] == 2 && plosca[col, row + 2] == 2 && plosca[col, row + 3] == 0)
+                    {
+                        plosca[col, row + 3] = 2;
+                        gameBoardPanel.Invalidate(); // Update the game board with the new move
+                        if (PreveriZmago(col, row + 3)) // Check if this move wins the game
+                        {
+                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            konecIgre = true;
+                            gbReset.Visible = true;
+                            stZmagRdeci += 1;
+                            zmageRdec.Text = $"{stZmagRdeci}";
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Check diagonally (from top-left to bottom-right)
+            for (int col = 0; col < stStolpcev - 3; col++)
+            {
+                for (int row = 0; row < stVrstic - 3; row++)
+                {
+                    if (plosca[col, row] == 2 && plosca[col + 1, row + 1] == 2 && plosca[col + 2, row + 2] == 2 && plosca[col + 3, row + 3] == 0)
+                    {
+                        plosca[col + 3, row + 3] = 2;
+                        gameBoardPanel.Invalidate(); // Update the game board with the new move
+                        if (PreveriZmago(col + 3, row + 3)) // Check if this move wins the game
+                        {
+                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            konecIgre = true;
+                            gbReset.Visible = true;
+                            stZmagRdeci += 1;
+                            zmageRdec.Text = $"{stZmagRdeci}";
+                        }
+                        return;
+                    }
+                }
+            }
+
+            // Check diagonally (from top-right to bottom-left)
+            for (int col = 3; col < stStolpcev; col++)
+            {
+                for (int row = 0; row < stVrstic - 3; row++)
+                {
+                    if (plosca[col, row] == 2 && plosca[col - 1, row + 1] == 2 && plosca[col - 2, row + 2] == 2 && plosca[col - 3, row + 3] == 0)
+                    {
+                        plosca[col - 3, row + 3] = 2;
+                        gameBoardPanel.Invalidate(); // Update the game board with the new move
+                        if (PreveriZmago(col - 3, row + 3)) // Check if this move wins the game
+                        {
+                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            konecIgre = true;
+                            gbReset.Visible = true;
+                            stZmagRdeci += 1;
+                            zmageRdec.Text = $"{stZmagRdeci}";
+                        }
+                        return;
+                    }
+                }
+            }
+        }
     }
 }
 
