@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace _4Vvrsto
 {
-
-    // TODO: Različna režavnost robota
-    // Grafika izboljšava
-
-
-
 
     public partial class Form1 : Form
     {
@@ -23,8 +19,8 @@ namespace _4Vvrsto
         bool igraZaceta = false;
         bool gbLahki_pritisnjen = false;
         bool gbTezki_pritisnjen = false;
-        private int col;
-        private int row;
+        private int stolpec;
+        private int vrstica;
         public Form1()
         {
             InitializeComponent();
@@ -37,11 +33,13 @@ namespace _4Vvrsto
             gbTezka.Visible = false;
             napisTezavnost.Visible = false;
 
-            //
-            //gameBoardPanel.MouseClick += gameBoardPanel_MouseClick;
         }
 
-
+        /// <summary>
+        /// Metoda, ki odstrani napise z zacetnega okna
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void gbZacni_Click(object sender, MouseEventArgs e)
         {
             gbZacni.Visible = false;
@@ -52,11 +50,14 @@ namespace _4Vvrsto
             zmageRumeni.Visible = true;
             gbRobot.Visible = false;
             igraZaceta = true;
-            gameBoardPanel.Invalidate(); // Trigger the Paint event to update the graphics
-                                         // gameBoardPanel.Paint += Narisi;
+            gameBoardPanel.Invalidate(); 
         }
 
-
+        /// <summary>
+        /// Meotda, ki ponastavi igralno plosco
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void gbReset_Click(object sender, EventArgs e)
         {
             // spraznemo igralno plosco
@@ -109,40 +110,40 @@ namespace _4Vvrsto
 
                 int stVrstic = plosca.GetLength(1);
                 int stStolpcev = plosca.GetLength(0);
-                int cellSize = 50;
-                int padding = 10;
+                int velikostCelice = 50;
+                int razmik = 10;
 
-                int sirinaPlosce = stStolpcev * cellSize;
-                int visinaPlosce = stVrstic * cellSize;
+                int sirinaPlosce = stStolpcev * velikostCelice;
+                int visinaPlosce = stVrstic * velikostCelice;
 
 
                 // narisemo mrezo (x koordinate)
-                for (int col = 0; col <= stStolpcev; col++)
+                for (int stolpec = 0; stolpec <= stStolpcev; stolpec++)
                 {
-                    int x = col * cellSize + padding;
-                    Rectangle rect = new Rectangle(x, padding, 1, visinaPlosce);
+                    int x = stolpec * velikostCelice + razmik;
+                    Rectangle rect = new Rectangle(x, razmik, 1, visinaPlosce);
                     g.FillRectangle(Brushes.White, rect);
                 }
 
                 // Narisemo mrezo (y koordinate)
-                for (int row = 0; row <= stVrstic; row++)
+                for (int vrstica = 0; vrstica <= stVrstic; vrstica++)
                 {
-                    int y = row * cellSize + padding;
-                    Rectangle rect = new Rectangle(padding, y, sirinaPlosce, 1);
+                    int y = vrstica * velikostCelice + razmik;
+                    Rectangle rect = new Rectangle(razmik, y, sirinaPlosce, 1);
                     g.FillRectangle(Brushes.White, rect);
                 }
                 // Narisemo kroge, ki jih igralca polozita
-                for (int row = 0; row < stVrstic; row++)
+                for (int vrstica = 0; vrstica < stVrstic; vrstica++)
                 {
-                    for (int col = 0; col < stStolpcev; col++)
+                    for (int stolpec = 0; stolpec < stStolpcev; stolpec++)
                     {
-                        int x = col * cellSize + padding;
-                        int y = row * cellSize + padding;
+                        int x = stolpec * velikostCelice + razmik;
+                        int y = vrstica * velikostCelice + razmik;
 
-                        if (plosca[col, row] == 1)
-                            g.FillEllipse(Brushes.Yellow, x, y, cellSize, cellSize);
-                        else if (plosca[col, row] == 2)
-                            g.FillEllipse(Brushes.Red, x, y, cellSize, cellSize);
+                        if (plosca[stolpec, vrstica] == 1)
+                            g.FillEllipse(Brushes.Yellow, x, y, velikostCelice, velikostCelice);
+                        else if (plosca[stolpec, vrstica] == 2)
+                            g.FillEllipse(Brushes.Red, x, y, velikostCelice, velikostCelice);
                     }
                 }
             }
@@ -162,28 +163,28 @@ namespace _4Vvrsto
         {
             int stVrstic = plosca.GetLength(1);
             int stStolpcev = plosca.GetLength(0);
-            int cellSize = 50;
-            int padding = 10;
-            col = (e.X - padding) / cellSize;
-            row = KjeLahkoPolozim(col);
+            int velikostCelice = 50;
+            int razmik = 10;
+            stolpec = (e.X - razmik) / velikostCelice;
+            vrstica = KjeLahkoPolozim(stolpec);
 
-            if (!(col < 0 || col > 6))
+            if (!(stolpec < 0 || stolpec > 6))
             {
                 if (konecIgre)
                     return;
 
-                if (col >= 0 && col < stStolpcev && row >= 0 && row < stVrstic && plosca[col, row] == 0)
+                if (stolpec >= 0 && stolpec < stStolpcev && vrstica >= 0 && vrstica < stVrstic && plosca[stolpec, vrstica] == 0)
                 {
-                    if (gbLahki_pritisnjen) //  igra z robotom
+                    if (gbLahki_pritisnjen) //  igra z lahkim robotom
                     {
 
                         if (naVrstiRumeni) // rumen je na vrsti
                         {
-                            plosca[col, row] = 1;
+                            plosca[stolpec, vrstica] = 1;
                         }
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
 
-                        if (PreveriZmago(col, row))
+                        if (PreveriZmago(stolpec, vrstica))
                         {
                             // ce naVrstiRumeni vrne True, je string Rumeni, ce ne je Rdeči
 
@@ -195,13 +196,12 @@ namespace _4Vvrsto
                             return; 
                         }
 
-                        // rdeci je na vrsti
-                        //await Task.Delay(750);
-                        GenerateRandomMove();
+                        
+                        GenerirajNakljucniMet();
 
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
 
-                        if (PreveriZmago(col, row))
+                        if (PreveriZmago(stolpec, vrstica))
                         {
                             // ce naVrstiRumeni vrne True, je string Rumeni, ce ne je Rdeči
                             MessageBox.Show("Rdeči je zmagal!");
@@ -223,28 +223,46 @@ namespace _4Vvrsto
                     {
                         if (naVrstiRumeni) // rumen je na vrsti
                         {
-                            plosca[col, row] = 1;
+                            plosca[stolpec, vrstica] = 1;
+
                         }
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
 
-                        if (PreveriZmago(col, row))
-                        {
-                            MessageBox.Show("Rumeni je zmagal!");
-                            konecIgre = true;
-                            gbReset.Visible = true;
-                            stZmagRumeni += 1;
-                            zmageRumeni.Text = $"{stZmagRumeni}";
-                            return;
-                        }
 
-                        // Check if there are three red coins in a row
-                        if (CountRedCoinsInRow(col, row) >= 3)
+
+                        // preveri ali so tri rdeci v vrsti
+                        int potezaS = -1;
+                        int potezaV = -1;
+                        for (int v = 0; v < stVrstic; v++)
                         {
-                            UpdateRedCoinsSequence(); // Generate a smart move
+                            for (int s = 0; s< stStolpcev; s++)
+                            {
+                                if (plosca[s, v] == 0)
+                                {
+                                    if (Zmagovalec(s, v) == 2)
+                                    {
+                                        potezaS = s;
+                                        potezaV = v;
+                                    }
+                                }
+                            }
+                        }
+                        Console.WriteLine(potezaV.ToString());
+                        Console.WriteLine(potezaS.ToString());
+                        /*
+                        if (StejRdeceKovance(stolpec, vrstica) >= 3)
+                        {
+                            PosodobiRdece(); // pametna poteza
+                            
+                        }
+                        */
+                        if (potezaS != -1 && potezaV != -1)
+                        {
+                            GenerirajNakljucniMet(); 
                         }
                         else
                         {
-                            GenerateRandomMove(); // Generate a random move
+                            PosodobiRdece(potezaS, potezaV);
                         }
 
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
@@ -254,10 +272,10 @@ namespace _4Vvrsto
                     else // igra med dvema clovekoma
                     {
 
-                        plosca[col, row] = naVrstiRumeni ? 1 : 2;
+                        plosca[stolpec, vrstica] = naVrstiRumeni ? 1 : 2;
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
 
-                        if (PreveriZmago(col, row))
+                        if (PreveriZmago(stolpec, vrstica))
                         {
                             // ce naVrstiRumeni vrne True, je string Rumeni, ce ne je Rdeči
                             string zmagovalec = naVrstiRumeni ? "Rumeni" : "Rdeči";
@@ -287,6 +305,11 @@ namespace _4Vvrsto
             }
         }
 
+        /// <summary>
+        /// Metoda, ki odstrani napise z okna ob kliku na lahko tezavnost
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void gbLahki_MouseClick(object sender, MouseEventArgs e)
         {
             gbLahki_pritisnjen = true;
@@ -305,9 +328,14 @@ namespace _4Vvrsto
 
         }
 
+        /// <summary>
+        /// Metoda, ki odstrani napise z okna ob kliku na tezka tezavnost
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void gbTezka_MouseClick(object sender, MouseEventArgs e)
         {
-            gbLahki_pritisnjen = true;
+            gbTezki_pritisnjen= true;
             gbZacni.Visible = false;
             gbLahki.Visible = false;
             gbTezka.Visible = false;
@@ -323,29 +351,32 @@ namespace _4Vvrsto
 
         }
 
-
-        private void GenerateRandomMove()
+        /// <summary>
+        /// Generira nakljucen stolpec in ustrezno vrstico
+        /// v igralno plosco ustavi 2 na ustrezno mesto
+        /// </summary>
+        private void GenerirajNakljucniMet()
         {
             
             int stStolpcev = plosca.GetLength(0);
             int stVrstic = plosca.GetLength(1);
-            int cellSize = 50;
-            int padding = 10;
+            int velikostCelice = 50;
+            int razmik = 10;
 
 
             // Generate random coordinates within the bounds of the game board
             Random random = new Random();
-            col = (random.Next(0, stStolpcev) * cellSize + padding) / cellSize;
+            stolpec = (random.Next(0, stStolpcev) * velikostCelice + razmik) / velikostCelice;
 
-            row = KjeLahkoPolozim(col);
-            if (row == -1)
+            vrstica = KjeLahkoPolozim(stolpec);
+            if (vrstica == -1)
             {
-                GenerateRandomMove();
+                GenerirajNakljucniMet();
             }
 
-            if (col >= 0 && col < stStolpcev && row >= 0 && row < stVrstic && plosca[col, row] == 0)
+            if (stolpec >= 0 && stolpec < stStolpcev && vrstica >= 0 && vrstica < stVrstic && plosca[stolpec, vrstica] == 0)
             {
-                plosca[col, row] = 2;
+                plosca[stolpec, vrstica] = 2;
             }
         }
 
@@ -353,18 +384,18 @@ namespace _4Vvrsto
         /// Vrne vrstico v katero lahko vrzemo kovanec v podanem stoplcu.
         /// Če vrstice ni mozno najti, vrne -1
         /// </summary>
-        /// <param name="col"></param>
+        /// <param name="stolpec"></param>
         /// <returns></returns>
-        private int KjeLahkoPolozim(int col) // DARJO
+        private int KjeLahkoPolozim(int stolpec) 
         {
-            if ((col < 0 || col > 6))
+            if ((stolpec < 0 || stolpec > 6))
             { return -1; }
             int StVrstic = plosca.GetLength(1);
 
-            for (int row = StVrstic - 1; row >= 0; row--)
+            for (int vrstica = StVrstic - 1; vrstica >= 0; vrstica--)
             {
-                if (plosca[col, row] == 0)
-                    return row;
+                if (plosca[stolpec, vrstica] == 0)
+                    return vrstica;
             }
 
             return -1;
@@ -400,6 +431,8 @@ namespace _4Vvrsto
             st += StejPonovitve(stolpec, vrstica, 1, 1, igralec);
             if (st >= 4)
                 return true;
+
+            // preverimo zmago v smeri desno_diag - levo_diag
 
             st = 1;
             st += StejPonovitve(stolpec, vrstica, -1, 1, igralec);
@@ -445,11 +478,11 @@ namespace _4Vvrsto
             int stVrstic = plosca.GetLength(1);
             int stStolpcev = plosca.GetLength(0);
 
-            for (int row = 0; row < stVrstic; row++)
+            for (int vrstica = 0; vrstica < stVrstic; vrstica++)
             {
-                for (int col = 0; col < stStolpcev; col++)
+                for (int stolpec = 0; stolpec < stStolpcev; stolpec++)
                 {
-                    if (plosca[col, row] == 0)
+                    if (plosca[stolpec, vrstica] == 0)
                         return false;
                 }
             }
@@ -457,44 +490,229 @@ namespace _4Vvrsto
             return true;
 
         }
-        private int CountRedCoinsInRow(int col, int row)
+        /// <summary>
+        /// poresteje stevilo rdecih kovancev v vrsti
+        /// </summary>
+        /// <param name="stolpec"></param>
+        /// <param name="vrstica"></param>
+        /// <returns></returns>
+        private int StejRdeceKovance(int stolpec, int vrstica)
         {
             int stStolpcev = plosca.GetLength(0);
-            int igralec = 2; // Red player
+            int igralec = 2; 
 
-            // Count horizontally to the left
-            int count = 1;
-            for (int c = col - 1; c >= 0 && plosca[c, row] == igralec; c--)
+            // steje vodoravno v levo
+            int st = 0;
+
+            int levoV = Math.Max(stolpec - 3, 0);
+            int desnoV = Math.Min(stStolpcev - 4, stStolpcev - 1);
+            for (int i = levoV; i <= desnoV; i++)
             {
-                count++;
+                if (plosca[vrstica, i] == igralec)
+                {
+                    st++;
+                }
+                else
+                {
+                    st = 0;
+                }
             }
-
-            // Count horizontally to the right
-            for (int c = col + 1; c < stStolpcev && plosca[c, row] == igralec; c++)
+            if (st == 4)
             {
-                count++;
+                return 4;
             }
+            st = 0;
+            int spodajN = Math.Max(vrstica - 3, 0);
+            int zgorajN = Math.Min(vrstica + 3, 6);
+            
+            for (int i = spodajN; i <= zgorajN; i++)
+            {
+                if (plosca[i, stolpec] == igralec)
+                {
+                    st++;
+                }
+                else
+                {
+                    st = 0;
+                }
+            }
+            if (st == 4)
+            {
+                return 4;
+            }
+            st = 0;
 
-            return count;
+            /*
+            for (int c = stolpec - 1; c >= 0 && plosca[c, vrstica] == igralec; c--)
+            {
+                st++;
+            }
+            /*
+            // steje vodoravno v desno
+            for (int c = stolpec + 1; c < stStolpcev && plosca[c, vrstica] == igralec; c++)
+            {
+                st++;
+            }
+            */
+            return st;
         }
 
-        private void UpdateRedCoinsSequence()
+        // Dodal Jernej
+        public int Zmagovalec(int stolpec, int vrstica)
+        {
+            int[,] novaP = plosca.Clone() as int[,];
+            novaP[stolpec, vrstica] = 2;
+            int stStolpcev = 7;
+            int stVrstic = 6;
+            // Vrstice
+            List<int> vrsta = new List<int>();
+            for (int i = 0; i < stVrstic; i++)
+            {
+                for (int j = 0; j < stStolpcev; j++)
+                {
+                    vrsta.Add(novaP[j, i]);
+                }
+                if (Vsebuje4(2, vrsta))
+                {
+                    return 2;
+                }
+                vrsta = new List<int>();
+            }
+            
+
+            // Stolpci
+            for (int i = 0; i < stStolpcev; i++)
+            {
+                for (int j = 0; j < stVrstic; j++)
+                {
+                    vrsta.Add(novaP[i, j]);
+                }
+
+                if (Vsebuje4(2, vrsta))
+                {
+                    // return 1;
+                    return 2;
+                }
+                vrsta = new List<int>();
+            }
+
+            // Desne diagonale
+            // Modificiran zigzag algoritem.
+            for (int lin = 1; lin < stStolpcev + stVrstic - 1; lin++)
+            {
+                int zacetniStolpec = Math.Max(0, lin - stVrstic);
+                List<int> elt = new List<int>() { lin, (stStolpcev - zacetniStolpec), stVrstic };
+                int stElt = elt.Min();
+                vrsta = new List<int>();
+                for (int j = 0; j < stElt; j++)
+                {
+                    vrsta.Add(novaP[zacetniStolpec + j, Math.Min(stVrstic, lin) - j - 1]);
+                }
+                if (Vsebuje4(2, vrsta))
+                {
+                    return 2;
+                }
+            }
+
+            // Leve diagonale
+            for (int lin = 1; lin < stStolpcev + stVrstic; lin++)
+            {
+                int zacetniStolpec = Math.Max(0, stStolpcev - lin);
+                List<int> elt = new List<int>() { lin, (stStolpcev - Math.Max(0, lin - stVrstic)), stVrstic }; 
+                int stElt = elt.Min();
+                vrsta = new List<int>();
+                for (int j = 0; j < stElt; j++)
+                {
+                    vrsta.Add(novaP[zacetniStolpec + j, Math.Max(0, lin - stStolpcev) + j]);
+                }
+                if (Vsebuje4(2, vrsta))
+                {
+                    // return 1;
+                    return 2;
+                }
+            }
+
+            return 0; // Ni zmagovalca.
+
+        }
+
+        // Dodal Jernej
+        public bool Vsebuje4(int barva, List<int> vrsta)
+        {
+            int st = 0;
+            if (vrsta.Count < 4)
+            {
+                return false;
+            }
+            for (int i = 0; i < vrsta.Count; i++)
+            {
+
+                if (vrsta[i] == 0 || vrsta[i] != barva)
+                {
+                    st = 0;
+                }
+
+                else if (vrsta[i] == barva)
+                {
+                    st++;
+                }
+
+                if (st == 4)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// preveri ali je pametni robot zmagal
+        /// </summary>
+        /*
+        private void PosodobiRdece()
         {
             int stVrstic = plosca.GetLength(1);
             int stStolpcev = plosca.GetLength(0);
 
-            // Check horizontally
-            for (int row = 0; row < stVrstic; row++)
+            // vodoravno preveri ce so 3 v vrsto
+            for (int vrstica = 0; vrstica < stVrstic; vrstica++)
             {
-                for (int col = 0; col < stStolpcev - 3; col++)
+                for (int stolpec = 0; stolpec < stStolpcev - 2; stolpec++)
                 {
-                    if (plosca[col, row] == 2 && plosca[col + 1, row] == 2 && plosca[col + 2, row] == 2 && plosca[col + 3, row] == 0)
+                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec + 1, vrstica] == 2 && plosca[stolpec + 2, vrstica] == 2)
                     {
-                        plosca[col + 3, row] = 2;
-                        gameBoardPanel.Invalidate(); // Update the game board with the new move
-                        if (PreveriZmago(col + 3, row)) // Check if this move wins the game
+                        int ciljStolp = stolpec + 3;
+                        int ciljVrst = KjeLahkoPolozim(ciljStolp);
+                        if (ciljVrst != -1)
                         {
-                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            plosca[ciljStolp, ciljVrst] = 2;
+                            gameBoardPanel.Invalidate();
+                            if (PreveriZmago(ciljStolp, ciljVrst))
+                            {
+                                MessageBox.Show("Rdeči je zmagal!");
+                                konecIgre = true;
+                                gbReset.Visible = true;
+                                stZmagRdeci += 1;
+                                zmageRdec.Text = $"{stZmagRdeci}";
+                            }
+                            return;
+                        }
+                    }
+                }
+
+            }
+                // preveri navpicno
+                for (int stolpec = 0; stolpec < stStolpcev; stolpec++)
+            {
+                for (int vrstica = 0; vrstica < stVrstic - 3; vrstica++)
+                {
+                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec, vrstica + 1] == 2 && plosca[stolpec, vrstica + 2] == 2 && plosca[stolpec, vrstica + 3] == 0)
+                    {
+                        plosca[stolpec, vrstica + 3] = 2;
+                        gameBoardPanel.Invalidate(); 
+                        if (PreveriZmago(stolpec, vrstica + 3)) // preveri ali zmaga igro
+                        {
+                            MessageBox.Show("Rdeči je zmagal!");
                             konecIgre = true;
                             gbReset.Visible = true;
                             stZmagRdeci += 1;
@@ -505,18 +723,18 @@ namespace _4Vvrsto
                 }
             }
 
-            // Check vertically
-            for (int col = 0; col < stStolpcev; col++)
+            // preveri diag levoGor - desnoDol
+            for (int stolpec = 0; stolpec < stStolpcev - 3; stolpec++)
             {
-                for (int row = 0; row < stVrstic - 3; row++)
+                for (int vrstica = 0; vrstica < stVrstic - 3; vrstica++)
                 {
-                    if (plosca[col, row] == 2 && plosca[col, row + 1] == 2 && plosca[col, row + 2] == 2 && plosca[col, row + 3] == 0)
+                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec + 1, vrstica + 1] == 2 && plosca[stolpec + 2, vrstica + 2] == 2 && plosca[stolpec + 3, vrstica + 3] == 0)
                     {
-                        plosca[col, row + 3] = 2;
-                        gameBoardPanel.Invalidate(); // Update the game board with the new move
-                        if (PreveriZmago(col, row + 3)) // Check if this move wins the game
+                        plosca[stolpec + 3, vrstica + 3] = 2;
+                        gameBoardPanel.Invalidate(); 
+                        if (PreveriZmago(stolpec + 3, vrstica + 3)) // preveri zmago
                         {
-                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            MessageBox.Show("Rdeči je zmagal!"); 
                             konecIgre = true;
                             gbReset.Visible = true;
                             stZmagRdeci += 1;
@@ -527,18 +745,18 @@ namespace _4Vvrsto
                 }
             }
 
-            // Check diagonally (from top-left to bottom-right)
-            for (int col = 0; col < stStolpcev - 3; col++)
+            // preveri diag desnoGor - levoDol
+            for (int stolpec = 3; stolpec < stStolpcev; stolpec++)
             {
-                for (int row = 0; row < stVrstic - 3; row++)
+                for (int vrstica = 0; vrstica < stVrstic - 3; vrstica++)
                 {
-                    if (plosca[col, row] == 2 && plosca[col + 1, row + 1] == 2 && plosca[col + 2, row + 2] == 2 && plosca[col + 3, row + 3] == 0)
+                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec - 1, vrstica + 1] == 2 && plosca[stolpec - 2, vrstica + 2] == 2 && plosca[stolpec - 3, vrstica + 3] == 0)
                     {
-                        plosca[col + 3, row + 3] = 2;
-                        gameBoardPanel.Invalidate(); // Update the game board with the new move
-                        if (PreveriZmago(col + 3, row + 3)) // Check if this move wins the game
+                        plosca[stolpec - 3, vrstica + 3] = 2;
+                        gameBoardPanel.Invalidate(); 
+                        if (PreveriZmago(stolpec - 3, vrstica + 3)) 
                         {
-                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
+                            MessageBox.Show("Rdeči je zmagal!");
                             konecIgre = true;
                             gbReset.Visible = true;
                             stZmagRdeci += 1;
@@ -548,28 +766,16 @@ namespace _4Vvrsto
                     }
                 }
             }
-
-            // Check diagonally (from top-right to bottom-left)
-            for (int col = 3; col < stStolpcev; col++)
-            {
-                for (int row = 0; row < stVrstic - 3; row++)
-                {
-                    if (plosca[col, row] == 2 && plosca[col - 1, row + 1] == 2 && plosca[col - 2, row + 2] == 2 && plosca[col - 3, row + 3] == 0)
-                    {
-                        plosca[col - 3, row + 3] = 2;
-                        gameBoardPanel.Invalidate(); // Update the game board with the new move
-                        if (PreveriZmago(col - 3, row + 3)) // Check if this move wins the game
-                        {
-                            MessageBox.Show("Rdeči je zmagal!"); // Red player wins
-                            konecIgre = true;
-                            gbReset.Visible = true;
-                            stZmagRdeci += 1;
-                            zmageRdec.Text = $"{stZmagRdeci}";
-                        }
-                        return;
-                    }
-                }
-            }
+        } */
+        private void PosodobiRdece(int stolpec, int vrstica)
+        {
+            plosca[stolpec, vrstica] = 2;
+            gameBoardPanel.Invalidate();
+            MessageBox.Show("Rdeči je zmagal!");
+            konecIgre = true;
+            gbReset.Visible = true;
+            stZmagRdeci += 1;
+            zmageRdec.Text = $"{stZmagRdeci}";
         }
     }
 }
