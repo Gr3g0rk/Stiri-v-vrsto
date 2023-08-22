@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Collections.Generic;
 
@@ -223,20 +221,38 @@ namespace _4Vvrsto
                     {
                         if (naVrstiRumeni) // rumen je na vrsti
                         {
-                            plosca[stolpec, vrstica] = 1;
+                            plosca[stolpec, vrstica] = 1;  
 
                         }
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
 
 
+                        if (PreveriZmago(stolpec, vrstica))
+                        {
+                            MessageBox.Show("Rumeni je zmagal!");
+                            konecIgre = true;
+                            gbReset.Visible = true;
+                            stZmagRumeni += 1;
+                            zmageRumeni.Text = $"{stZmagRumeni}";
+                            return;
+                        }
+
 
                         // preveri ali so tri rdeci v vrsti
                         int potezaS = -1;
                         int potezaV = -1;
+                        
                         for (int v = 0; v < stVrstic; v++)
                         {
                             for (int s = 0; s< stStolpcev; s++)
                             {
+                                if (v + 1 < stVrstic)
+                                {
+                                    if (plosca[s, v + 1] == 0)
+                                    {
+                                        continue;
+                                    }
+                                }
                                 if (plosca[s, v] == 0)
                                 {
                                     if (Zmagovalec(s, v) == 2)
@@ -247,17 +263,10 @@ namespace _4Vvrsto
                                 }
                             }
                         }
-                        Console.WriteLine(potezaV.ToString());
-                        Console.WriteLine(potezaS.ToString());
-                        /*
-                        if (StejRdeceKovance(stolpec, vrstica) >= 3)
+                        
+                        if (potezaS == -1 && potezaV == -1)
                         {
-                            PosodobiRdece(); // pametna poteza
-                            
-                        }
-                        */
-                        if (potezaS != -1 && potezaV != -1)
-                        {
+
                             GenerirajNakljucniMet(); 
                         }
                         else
@@ -297,6 +306,7 @@ namespace _4Vvrsto
                         {
                             MessageBox.Show("Nihče ni zmagal.");
                             konecIgre = true;
+                            gbReset.Visible = true;
                         }
                         naVrstiRumeni = !naVrstiRumeni;
                     }
@@ -491,73 +501,11 @@ namespace _4Vvrsto
 
         }
         /// <summary>
-        /// poresteje stevilo rdecih kovancev v vrsti
+        /// Preveri, ali je robot zmagal (v kateri koli smeri) z zetonom, ki ga je dodal nazadnje. 
         /// </summary>
-        /// <param name="stolpec"></param>
-        /// <param name="vrstica"></param>
+        /// <param name="stolpec">Stolpec zadnjega položenega žetona</param>
+        /// <param name="vrstica">Vrstica zadnjega položenega žetona</param>
         /// <returns></returns>
-        private int StejRdeceKovance(int stolpec, int vrstica)
-        {
-            int stStolpcev = plosca.GetLength(0);
-            int igralec = 2; 
-
-            // steje vodoravno v levo
-            int st = 0;
-
-            int levoV = Math.Max(stolpec - 3, 0);
-            int desnoV = Math.Min(stStolpcev - 4, stStolpcev - 1);
-            for (int i = levoV; i <= desnoV; i++)
-            {
-                if (plosca[vrstica, i] == igralec)
-                {
-                    st++;
-                }
-                else
-                {
-                    st = 0;
-                }
-            }
-            if (st == 4)
-            {
-                return 4;
-            }
-            st = 0;
-            int spodajN = Math.Max(vrstica - 3, 0);
-            int zgorajN = Math.Min(vrstica + 3, 6);
-            
-            for (int i = spodajN; i <= zgorajN; i++)
-            {
-                if (plosca[i, stolpec] == igralec)
-                {
-                    st++;
-                }
-                else
-                {
-                    st = 0;
-                }
-            }
-            if (st == 4)
-            {
-                return 4;
-            }
-            st = 0;
-
-            /*
-            for (int c = stolpec - 1; c >= 0 && plosca[c, vrstica] == igralec; c--)
-            {
-                st++;
-            }
-            /*
-            // steje vodoravno v desno
-            for (int c = stolpec + 1; c < stStolpcev && plosca[c, vrstica] == igralec; c++)
-            {
-                st++;
-            }
-            */
-            return st;
-        }
-
-        // Dodal Jernej
         public int Zmagovalec(int stolpec, int vrstica)
         {
             int[,] novaP = plosca.Clone() as int[,];
@@ -590,14 +538,12 @@ namespace _4Vvrsto
 
                 if (Vsebuje4(2, vrsta))
                 {
-                    // return 1;
                     return 2;
                 }
                 vrsta = new List<int>();
             }
 
             // Desne diagonale
-            // Modificiran zigzag algoritem.
             for (int lin = 1; lin < stStolpcev + stVrstic - 1; lin++)
             {
                 int zacetniStolpec = Math.Max(0, lin - stVrstic);
@@ -627,16 +573,19 @@ namespace _4Vvrsto
                 }
                 if (Vsebuje4(2, vrsta))
                 {
-                    // return 1;
                     return 2;
                 }
             }
-
             return 0; // Ni zmagovalca.
-
         }
 
-        // Dodal Jernej
+        /// <summary>
+        /// Preveri, ali so žetoni določene barve prisotni v dani vrstici.
+        /// </summary>
+        /// <param name="barva">Barva (igralec), ki jo preverjamo</param>
+        /// <param name="vrsta">Seznam žetonov v vrstici</param>
+        /// <returns>True, če ima dana barva štiri zaporedne žetone v vrstici, sicer false</returns>
+
         public bool Vsebuje4(int barva, List<int> vrsta)
         {
             int st = 0;
@@ -666,107 +615,12 @@ namespace _4Vvrsto
         }
 
         /// <summary>
-        /// preveri ali je pametni robot zmagal
+        /// Posodobi igralno ploščo z rdečim žetonom na določenem stolpcu in vrstici.
+        /// Preveri tudi, ali je rdeči igralec zmagal.
         /// </summary>
-        /*
-        private void PosodobiRdece()
-        {
-            int stVrstic = plosca.GetLength(1);
-            int stStolpcev = plosca.GetLength(0);
+        /// <param name="stolpec">Stolpec, kamor je postavljen rdeči žeton</param>
+        /// <param name="vrstica">Vrstica, kjer je postavljen rdeči žeton</param>
 
-            // vodoravno preveri ce so 3 v vrsto
-            for (int vrstica = 0; vrstica < stVrstic; vrstica++)
-            {
-                for (int stolpec = 0; stolpec < stStolpcev - 2; stolpec++)
-                {
-                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec + 1, vrstica] == 2 && plosca[stolpec + 2, vrstica] == 2)
-                    {
-                        int ciljStolp = stolpec + 3;
-                        int ciljVrst = KjeLahkoPolozim(ciljStolp);
-                        if (ciljVrst != -1)
-                        {
-                            plosca[ciljStolp, ciljVrst] = 2;
-                            gameBoardPanel.Invalidate();
-                            if (PreveriZmago(ciljStolp, ciljVrst))
-                            {
-                                MessageBox.Show("Rdeči je zmagal!");
-                                konecIgre = true;
-                                gbReset.Visible = true;
-                                stZmagRdeci += 1;
-                                zmageRdec.Text = $"{stZmagRdeci}";
-                            }
-                            return;
-                        }
-                    }
-                }
-
-            }
-                // preveri navpicno
-                for (int stolpec = 0; stolpec < stStolpcev; stolpec++)
-            {
-                for (int vrstica = 0; vrstica < stVrstic - 3; vrstica++)
-                {
-                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec, vrstica + 1] == 2 && plosca[stolpec, vrstica + 2] == 2 && plosca[stolpec, vrstica + 3] == 0)
-                    {
-                        plosca[stolpec, vrstica + 3] = 2;
-                        gameBoardPanel.Invalidate(); 
-                        if (PreveriZmago(stolpec, vrstica + 3)) // preveri ali zmaga igro
-                        {
-                            MessageBox.Show("Rdeči je zmagal!");
-                            konecIgre = true;
-                            gbReset.Visible = true;
-                            stZmagRdeci += 1;
-                            zmageRdec.Text = $"{stZmagRdeci}";
-                        }
-                        return;
-                    }
-                }
-            }
-
-            // preveri diag levoGor - desnoDol
-            for (int stolpec = 0; stolpec < stStolpcev - 3; stolpec++)
-            {
-                for (int vrstica = 0; vrstica < stVrstic - 3; vrstica++)
-                {
-                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec + 1, vrstica + 1] == 2 && plosca[stolpec + 2, vrstica + 2] == 2 && plosca[stolpec + 3, vrstica + 3] == 0)
-                    {
-                        plosca[stolpec + 3, vrstica + 3] = 2;
-                        gameBoardPanel.Invalidate(); 
-                        if (PreveriZmago(stolpec + 3, vrstica + 3)) // preveri zmago
-                        {
-                            MessageBox.Show("Rdeči je zmagal!"); 
-                            konecIgre = true;
-                            gbReset.Visible = true;
-                            stZmagRdeci += 1;
-                            zmageRdec.Text = $"{stZmagRdeci}";
-                        }
-                        return;
-                    }
-                }
-            }
-
-            // preveri diag desnoGor - levoDol
-            for (int stolpec = 3; stolpec < stStolpcev; stolpec++)
-            {
-                for (int vrstica = 0; vrstica < stVrstic - 3; vrstica++)
-                {
-                    if (plosca[stolpec, vrstica] == 2 && plosca[stolpec - 1, vrstica + 1] == 2 && plosca[stolpec - 2, vrstica + 2] == 2 && plosca[stolpec - 3, vrstica + 3] == 0)
-                    {
-                        plosca[stolpec - 3, vrstica + 3] = 2;
-                        gameBoardPanel.Invalidate(); 
-                        if (PreveriZmago(stolpec - 3, vrstica + 3)) 
-                        {
-                            MessageBox.Show("Rdeči je zmagal!");
-                            konecIgre = true;
-                            gbReset.Visible = true;
-                            stZmagRdeci += 1;
-                            zmageRdec.Text = $"{stZmagRdeci}";
-                        }
-                        return;
-                    }
-                }
-            }
-        } */
         private void PosodobiRdece(int stolpec, int vrstica)
         {
             plosca[stolpec, vrstica] = 2;
