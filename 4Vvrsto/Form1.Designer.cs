@@ -41,6 +41,7 @@
             this.zmageRdec = new System.Windows.Forms.Label();
             this.zmageRumeni = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.naVrsti = new System.Windows.Forms.Label();
             this.gameBoardPanel.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -179,12 +180,23 @@
             this.zmageRumeni.TabIndex = 5;
             this.zmageRumeni.Text = "0";
             // 
+            // naVrsti
+            // 
+            this.naVrsti.AutoSize = true;
+            this.naVrsti.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.naVrsti.Location = new System.Drawing.Point(12, 26);
+            this.naVrsti.Name = "naVrsti";
+            this.naVrsti.Size = new System.Drawing.Size(17, 25);
+            this.naVrsti.TabIndex = 6;
+            this.naVrsti.Text = " ";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Blue;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.naVrsti);
             this.Controls.Add(this.zmageRumeni);
             this.Controls.Add(this.zmageRdec);
             this.Controls.Add(this.napisZmage);
@@ -215,6 +227,7 @@
         private System.Windows.Forms.Button gbLahki;
         private System.Windows.Forms.Label napisTezavnost;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.Label naVrsti;
     }
 }
 

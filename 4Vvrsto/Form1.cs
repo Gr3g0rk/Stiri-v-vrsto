@@ -30,6 +30,7 @@ namespace _4Vvrsto
             gbLahki.Visible = false;
             gbTezka.Visible = false;
             napisTezavnost.Visible = false;
+            naVrsti.Visible = false;
 
         }
 
@@ -48,6 +49,9 @@ namespace _4Vvrsto
             zmageRumeni.Visible = true;
             gbRobot.Visible = false;
             igraZaceta = true;
+            naVrsti.Visible = true;
+            naVrsti.Text = "Na vrsti je rumeni";
+            naVrsti.ForeColor = Color.Yellow;
             gameBoardPanel.Invalidate(); 
         }
 
@@ -62,6 +66,8 @@ namespace _4Vvrsto
             plosca = new int[7, 6];
             naVrstiRumeni = true;
             konecIgre = false;
+            naVrsti.Text = "Na vrsti je rumeni";
+            naVrsti.ForeColor = Color.Yellow;
             gameBoardPanel.Invalidate();  // Osvezimo gameBoardPanel, da se novi krogi gor narisejo (klice metodo Narisi
             gbReset.Visible = false;
 
@@ -88,6 +94,9 @@ namespace _4Vvrsto
             gbRobot.Visible = false;
             gbTezka.Visible = true;
             gbLahki.Visible = true;
+            naVrsti.Visible = false;
+            naVrsti.Text = "Na vrsti je rumeni";
+            naVrsti.ForeColor = Color.Yellow;
             napisTezavnost.Visible = true;
 
 
@@ -157,13 +166,15 @@ namespace _4Vvrsto
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void gameBoardPanel_MouseClick(object sender, MouseEventArgs e)
+        private void gameBoardPanel_MouseClick(object sender, MouseEventArgs e)
         {
+            naVrsti.Visible = true;
             int stVrstic = plosca.GetLength(1);
             int stStolpcev = plosca.GetLength(0);
             int velikostCelice = 50;
             int razmik = 10;
             stolpec = (e.X - razmik) / velikostCelice;
+
             vrstica = KjeLahkoPolozim(stolpec);
 
             if (!(stolpec < 0 || stolpec > 6))
@@ -175,6 +186,8 @@ namespace _4Vvrsto
                 {
                     if (gbLahki_pritisnjen) //  igra z lahkim robotom
                     {
+                        naVrsti.Visible = true;
+                        naVrsti.Text = "Na vrsti je rumeni";
 
                         if (naVrstiRumeni) // rumen je na vrsti
                         {
@@ -184,7 +197,6 @@ namespace _4Vvrsto
 
                         if (PreveriZmago(stolpec, vrstica))
                         {
-                            // ce naVrstiRumeni vrne True, je string Rumeni, ce ne je Rdeči
 
                             MessageBox.Show("Rumeni je zmagal!");
                             konecIgre = true;
@@ -219,6 +231,8 @@ namespace _4Vvrsto
                     // clovek in pametnejsi robot
                     else if (gbTezki_pritisnjen)
                     {
+                        naVrsti.Visible = true;
+                        naVrsti.Text = "Na vrsti je rumeni";
                         if (naVrstiRumeni) // rumen je na vrsti
                         {
                             plosca[stolpec, vrstica] = 1;  
@@ -273,13 +287,17 @@ namespace _4Vvrsto
                         {
                             PosodobiRdece(potezaS, potezaV);
                         }
-
+                        naVrsti.Text = "Na vrsti je rumeni";
+                        naVrsti.ForeColor = Color.Yellow;
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
                     }
 
 
                     else // igra med dvema clovekoma
                     {
+                        naVrsti.Visible = true;
+                        naVrsti.Text = naVrstiRumeni ? "Na vrsti je rdeči" : "Na vrsti je rumeni";
+                        naVrsti.ForeColor = naVrstiRumeni ? Color.Red: Color.Yellow;
 
                         plosca[stolpec, vrstica] = naVrstiRumeni ? 1 : 2;
                         gameBoardPanel.Invalidate(); // Sprozimo Narisi metodo, da doda zeton
@@ -323,6 +341,7 @@ namespace _4Vvrsto
         private void gbLahki_MouseClick(object sender, MouseEventArgs e)
         {
             gbLahki_pritisnjen = true;
+            naVrsti.Visible = true;
             gbZacni.Visible = false;
             gbLahki.Visible = false;
             gbTezka.Visible = false;
@@ -345,7 +364,9 @@ namespace _4Vvrsto
         /// <param name="e"></param>
         private void gbTezka_MouseClick(object sender, MouseEventArgs e)
         {
-            gbTezki_pritisnjen= true;
+            
+            gbTezki_pritisnjen = true;
+            naVrsti.Visible = true;
             gbZacni.Visible = false;
             gbLahki.Visible = false;
             gbTezka.Visible = false;
@@ -367,7 +388,8 @@ namespace _4Vvrsto
         /// </summary>
         private void GenerirajNakljucniMet()
         {
-            
+            naVrsti.Text = "Na vrsti je rumeni";
+            naVrsti.ForeColor = Color.Yellow;
             int stStolpcev = plosca.GetLength(0);
             int stVrstic = plosca.GetLength(1);
             int velikostCelice = 50;
@@ -388,6 +410,8 @@ namespace _4Vvrsto
             {
                 plosca[stolpec, vrstica] = 2;
             }
+            
+
         }
 
         /// <summary>
